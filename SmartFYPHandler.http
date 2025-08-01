@@ -1,0 +1,6 @@
+@SmartFYPHandler_HostAddress = http://localhost:5003
+
+GET {{SmartFYPHandler_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
