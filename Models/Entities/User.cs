@@ -29,6 +29,8 @@ namespace SmartFYPHandler.Models.Entities
         [Required]
         public UserRole Role { get; set; }
 
+        public int? DepartmentId { get; set; }
+
         [StringLength(100)]
         public string Department { get; set; } = string.Empty;
 
@@ -37,7 +39,12 @@ namespace SmartFYPHandler.Models.Entities
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
+        public virtual Department? DepartmentEntity { get; set; }
         public virtual ICollection<Project> SupervisedProjects { get; set; } = new List<Project>();
+        public virtual ICollection<FYPProject> SupervisedFYPProjects { get; set; } = new List<FYPProject>();
         public virtual ICollection<ProjectMember> ProjectMemberships { get; set; } = new List<ProjectMember>();
+        public virtual ICollection<ProjectEvaluation> ProjectEvaluations { get; set; } = new List<ProjectEvaluation>();
+        public virtual ICollection<UserInteraction> UserInteractions { get; set; } = new List<UserInteraction>();
+        public virtual UserPreference? UserPreference { get; set; }
     }
 }

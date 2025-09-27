@@ -35,9 +35,17 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
+// Add Memory Cache
+builder.Services.AddMemoryCache();
+
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IFYPProjectService, FYPProjectService>();
+builder.Services.AddScoped<IProjectEvaluationService, ProjectEvaluationService>();
+builder.Services.AddScoped<IRankingService, RankingService>();
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
