@@ -2,7 +2,8 @@
 using SmartFYPHandler.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Reflection.Emit;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace SmartFYPHandler.Data
 {
@@ -23,6 +24,9 @@ namespace SmartFYPHandler.Data
         public DbSet<DepartmentRanking> DepartmentRankings { get; set; }
         public DbSet<UserInteraction> UserInteractions { get; set; }
         public DbSet<UserPreference> UserPreferences { get; set; }
+        public DbSet<IndexedDocument> IndexedDocuments { get; set; }
+        public DbSet<IdeaAnalysis> IdeaAnalyses { get; set; }
+        public DbSet<IdeaMatch> IdeaMatches { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -163,6 +167,42 @@ namespace SmartFYPHandler.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.Property(e => e.EngagementLevel).HasConversion<int>();
+            });
+
+            // IndexedDocument configuration
+            modelBuilder.Entity<IndexedDocument>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SourceType).HasConversion<int>();
+                entity.HasIndex(e => new { e.SourceType, e.Year });
+
+                var converter = new ValueConverter<float[], string>(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<float[]>(v, (JsonSerializerOptions?)null) ?? Array.Empty<float>());
+                entity.Property(e => e.Embedding).HasConversion(converter);
+            });
+
+            // IdeaAnalysis configuration
+            modelBuilder.Entity<IdeaAnalysis>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ResultCategory).HasConversion<int>();
+                entity.Property(e => e.Status).HasConversion<int>();
+                entity.HasMany(a => a.Matches)
+                      .WithOne(m => m.IdeaAnalysis)
+                      .HasForeignKey(m => m.IdeaAnalysisId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // IdeaMatch configuration
+            modelBuilder.Entity<IdeaMatch>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SourceType).HasConversion<int>();
+                entity.HasOne(m => m.IndexedDocument)
+                      .WithMany()
+                      .HasForeignKey(m => m.IndexedDocumentId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Seed data

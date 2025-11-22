@@ -5,6 +5,8 @@ using SmartFYPHandler.Data;
 using SmartFYPHandler.Services.Interfaces;
 using SmartFYPHandler.Services.Implementations;
 using System.Text;
+using SmartFYPHandler.Services.Interfaces;
+using SmartFYPHandler.Services.Implementations.Embedding;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +48,16 @@ builder.Services.AddScoped<IFYPProjectService, FYPProjectService>();
 builder.Services.AddScoped<IProjectEvaluationService, ProjectEvaluationService>();
 builder.Services.AddScoped<IRankingService, RankingService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
+// Novelty Analyzer
+builder.Services.AddScoped<ITextPreprocessor, TextPreprocessor>();
+builder.Services.AddScoped<IEmbeddingProvider, SimpleHashEmbeddingProvider>();
+builder.Services.AddScoped<IDocumentIndexService, DocumentIndexService>();
+builder.Services.AddScoped<INoveltyService, NoveltyService>();
+builder.Services.Configure<SmartFYPHandler.Services.Implementations.NoveltyOptions>(
+    builder.Configuration.GetSection("Novelty"));
+builder.Services.AddScoped(sp => sp
+    .GetRequiredService<Microsoft.Extensions.Options.IOptions<SmartFYPHandler.Services.Implementations.NoveltyOptions>>()
+    .Value);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
