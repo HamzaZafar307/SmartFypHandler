@@ -10,12 +10,14 @@ namespace SmartFYPHandler.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly ITextPreprocessor _preprocessor;
         private readonly IEmbeddingProvider _embeddingProvider;
+        private readonly IEnumerable<IExternalDocumentProvider> _externalProviders;
 
-        public DocumentIndexService(ApplicationDbContext context, ITextPreprocessor preprocessor, IEmbeddingProvider embeddingProvider)
+        public DocumentIndexService(ApplicationDbContext context, ITextPreprocessor preprocessor, IEmbeddingProvider embeddingProvider, IEnumerable<IExternalDocumentProvider> externalProviders)
         {
             _context = context;
             _preprocessor = preprocessor;
             _embeddingProvider = embeddingProvider;
+            _externalProviders = externalProviders;
         }
 
         public async Task<int> IndexInternalFypAsync(IEnumerable<int>? projectIds = null, CancellationToken ct = default)
@@ -110,6 +112,116 @@ namespace SmartFYPHandler.Services.Implementations
             var denom = MathF.Sqrt(na) * MathF.Sqrt(nb);
             return denom > 0 ? dot / denom : 0f;
         }
+
+        public async Task<IReadOnlyList<IndexedDocument>> FindNearestAsync(float[] queryVec, int topK, DocumentSourceType[] sources, CancellationToken ct = default)
+        {
+            var docs = await _context.IndexedDocuments
+                .Where(d => sources.Contains(d.SourceType))
+                .ToListAsync(ct);
+
+            var scored = new List<(IndexedDocument doc, decimal sim)>();
+            foreach (var d in docs)
+            {
+                var sim = CosineSimilarity(queryVec, d.Embedding);
+                scored.Add((d, (decimal)sim));
+            }
+
+            return scored
+                .OrderByDescending(s => s.sim)
+                .Take(topK)
+                .Select(s => s.doc)
+                .ToList();
+        }
+
+        private async Task UpsertExternalAsync(DocumentSourceType source, string title, string url, int? year, int? departmentId, string? category, string text, CancellationToken ct)
+        {
+            var existing = await _context.IndexedDocuments
+                .FirstOrDefaultAsync(d => d.SourceType == source && d.Url == url, ct);
+
+            var norm = _preprocessor.Normalize(text);
+            var emb = await _embeddingProvider.EmbedAsync(norm, ct);
+
+            if (existing == null)
+            {
+                var doc = new IndexedDocument
+                {
+                    SourceType = source,
+                    SourceEntityId = null,
+                    Title = title,
+                    Url = url,
+                    Year = year,
+                    DepartmentId = departmentId,
+                    Category = category ?? string.Empty,
+                    Embedding = emb,
+                    MetadataJson = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.IndexedDocuments.Add(doc);
+            }
+            else
+            {
+                existing.Title = title;
+                existing.Year = year;
+                existing.DepartmentId = departmentId;
+                existing.Category = category ?? string.Empty;
+                existing.Embedding = emb;
+                existing.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        public async Task<int> IndexGitHubAsync(NoveltySourceSyncOptions options, CancellationToken ct = default)
+        {
+            var provider = _externalProviders.FirstOrDefault(p => p.SourceType == DocumentSourceType.GitHub);
+            if (provider == null) return 0;
+
+            // Use existing categories as queries to diversify results
+            var categories = await _context.FYPProjects
+                .Select(p => p.Category)
+                .Distinct()
+                .Where(c => c != null && c != "")
+                .Take(10)
+                .ToListAsync(ct);
+
+            int count = 0;
+            foreach (var cat in categories)
+            {
+                var docs = await provider.FetchAsync(cat, options, ct);
+                foreach (var d in docs)
+                {
+                    await UpsertExternalAsync(DocumentSourceType.GitHub, d.Title, d.Url, d.Year, d.DepartmentId, d.Category, d.Text, ct);
+                    count++;
+                }
+            }
+            await _context.SaveChangesAsync(ct);
+            return count;
+        }
+
+        public async Task<int> IndexPapersAsync(NoveltySourceSyncOptions options, CancellationToken ct = default)
+        {
+            var provider = _externalProviders.FirstOrDefault(p => p.SourceType == DocumentSourceType.ResearchPaper);
+            if (provider == null) return 0;
+
+            // Use categories as simple queries for arXiv
+            var categories = await _context.FYPProjects
+                .Select(p => p.Category)
+                .Distinct()
+                .Where(c => c != null && c != "")
+                .Take(10)
+                .ToListAsync(ct);
+
+            int count = 0;
+            foreach (var cat in categories)
+            {
+                var docs = await provider.FetchAsync(cat, options, ct);
+                foreach (var d in docs)
+                {
+                    await UpsertExternalAsync(DocumentSourceType.ResearchPaper, d.Title, d.Url, d.Year, d.DepartmentId, d.Category, d.Text, ct);
+                    count++;
+                }
+            }
+            await _context.SaveChangesAsync(ct);
+            return count;
+        }
     }
 }
-

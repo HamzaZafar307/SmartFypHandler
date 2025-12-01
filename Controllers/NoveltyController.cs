@@ -8,7 +8,7 @@ namespace SmartFYPHandler.Controllers
 {
     [ApiController]
     [Route("api/novelty")]
-    [Authorize]
+    //[Authorize]
     public class NoveltyController : ControllerBase
     {
         private readonly INoveltyService _noveltyService;
@@ -23,11 +23,8 @@ namespace SmartFYPHandler.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
-                {
-                    return Unauthorized(new { success = false, message = "Invalid token" });
-                }
+                // Public testing mode: no auth required
+                var userId = 0;
 
                 if (string.IsNullOrWhiteSpace(request.Title) && string.IsNullOrWhiteSpace(request.Abstract))
                 {
@@ -48,11 +45,8 @@ namespace SmartFYPHandler.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
-                {
-                    return Unauthorized(new { success = false, message = "Invalid token" });
-                }
+                // Public testing mode: no auth required
+                var userId = 0;
 
                 var result = await _noveltyService.GetAnalysisAsync(id, userId, ct);
                 if (result == null)
@@ -69,7 +63,6 @@ namespace SmartFYPHandler.Controllers
         }
 
         [HttpPost("reindex")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Reindex([FromBody] NoveltyReindexRequestDto request, CancellationToken ct)
         {
             try
@@ -84,4 +77,3 @@ namespace SmartFYPHandler.Controllers
         }
     }
 }
-

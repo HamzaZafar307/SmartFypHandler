@@ -12,6 +12,8 @@ namespace SmartFYPHandler.Services.Interfaces
     {
         Task<int> IndexInternalFypAsync(IEnumerable<int>? projectIds = null, CancellationToken ct = default);
         Task<IReadOnlyList<IndexedDocument>> FindNearestAsync(float[] queryVec, int topK, CancellationToken ct = default);
+        Task<IReadOnlyList<IndexedDocument>> FindNearestAsync(float[] queryVec, int topK, DocumentSourceType[] sources, CancellationToken ct = default);
+        Task<int> IndexGitHubAsync(NoveltySourceSyncOptions options, CancellationToken ct = default);
+        Task<int> IndexPapersAsync(NoveltySourceSyncOptions options, CancellationToken ct = default);
     }
 }
-

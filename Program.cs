@@ -50,8 +50,23 @@ builder.Services.AddScoped<IRankingService, RankingService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 // Novelty Analyzer
 builder.Services.AddScoped<ITextPreprocessor, TextPreprocessor>();
-builder.Services.AddScoped<IEmbeddingProvider, SimpleHashEmbeddingProvider>();
+// Embedding provider selection
+var noveltySection = builder.Configuration.GetSection("Novelty");
+var embeddingProvider = noveltySection["EmbeddingProvider"] ?? "Hash";
+if (string.Equals(embeddingProvider, "SBert", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddScoped<IEmbeddingProvider, SentenceBertEmbeddingProvider>();
+}
+else
+{
+    builder.Services.AddScoped<IEmbeddingProvider, SimpleHashEmbeddingProvider>();
+}
+
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IDocumentIndexService, DocumentIndexService>();
+// External providers (free sources)
+builder.Services.AddScoped<IExternalDocumentProvider, SmartFYPHandler.Services.Implementations.External.GitHubSourceProvider>();
+builder.Services.AddScoped<IExternalDocumentProvider, SmartFYPHandler.Services.Implementations.External.ArXivSourceProvider>();
 builder.Services.AddScoped<INoveltyService, NoveltyService>();
 builder.Services.Configure<SmartFYPHandler.Services.Implementations.NoveltyOptions>(
     builder.Configuration.GetSection("Novelty"));
@@ -81,6 +96,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+// Ensure database is created/updated for development/testing
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseHttpsRedirection();

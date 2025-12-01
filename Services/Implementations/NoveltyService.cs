@@ -60,18 +60,39 @@ namespace SmartFYPHandler.Services.Implementations
             await _indexService.IndexInternalFypAsync(null, ct);
 
             var embedding = await _embeddingProvider.EmbedAsync(normalized, ct);
-            var nearest = await _indexService.FindNearestAsync(embedding, _options.TopK, ct);
+            // Query nearest by source
+            var internalDocs = await _indexService.FindNearestAsync(embedding, _options.TopK, new[] { DocumentSourceType.InternalFyp }, ct);
+            var githubDocs = await _indexService.FindNearestAsync(embedding, _options.TopK, new[] { DocumentSourceType.GitHub }, ct);
+            var paperDocs = await _indexService.FindNearestAsync(embedding, _options.TopK, new[] { DocumentSourceType.ResearchPaper }, ct);
 
-            // Compute similarity scores (only internal FYPs for MVP)
-            var matches = new List<(IndexedDocument doc, decimal sim)>();
-            foreach (var d in nearest)
+            var allMatches = new List<(IndexedDocument doc, decimal sim)>();
+
+            decimal maxInternal = 0, maxGitHub = 0, maxPapers = 0;
+
+            foreach (var d in internalDocs)
             {
-                var sim = CosineSimilarity(embedding, d.Embedding);
-                matches.Add((d, (decimal)sim));
+                var sim = (decimal)CosineSimilarity(embedding, d.Embedding);
+                allMatches.Add((d, sim));
+                if (sim > maxInternal) maxInternal = sim;
+            }
+            foreach (var d in githubDocs)
+            {
+                var sim = (decimal)CosineSimilarity(embedding, d.Embedding);
+                allMatches.Add((d, sim));
+                if (sim > maxGitHub) maxGitHub = sim;
+            }
+            foreach (var d in paperDocs)
+            {
+                var sim = (decimal)CosineSimilarity(embedding, d.Embedding);
+                allMatches.Add((d, sim));
+                if (sim > maxPapers) maxPapers = sim;
             }
 
-            var maxInternal = matches.Count > 0 ? matches.Max(m => m.sim) : 0m;
-            var maxWeighted = maxInternal * (decimal)_options.Weights.InternalFyp;
+            var maxWeighted =
+                maxInternal * (decimal)_options.Weights.InternalFyp +
+                maxGitHub * (decimal)_options.Weights.GitHub +
+                maxPapers * (decimal)_options.Weights.Papers;
+
             var originality = (int)Math.Clamp((1m - maxWeighted) * 100m, 0m, 100m);
             var category = maxWeighted >= (decimal)_options.Similarity.High
                 ? NoveltyCategory.HighSimilarity
@@ -98,7 +119,7 @@ namespace SmartFYPHandler.Services.Implementations
 
             // Persist top matches
             int rank = 1;
-            foreach (var m in matches.OrderByDescending(m => m.sim).Take(_options.TopK))
+            foreach (var m in allMatches.OrderByDescending(m => m.sim).Take(_options.TopK))
             {
                 _context.IdeaMatches.Add(new IdeaMatch
                 {
@@ -134,7 +155,14 @@ namespace SmartFYPHandler.Services.Implementations
             {
                 await _indexService.IndexInternalFypAsync(null, ct);
             }
-            // GitHub/Papers providers can be plugged here later
+            if (request.GitHub)
+            {
+                await _indexService.IndexGitHubAsync(new NoveltySourceSyncOptions { YearFrom = request.YearFrom, YearTo = request.YearTo }, ct);
+            }
+            if (request.Papers)
+            {
+                await _indexService.IndexPapersAsync(new NoveltySourceSyncOptions { YearFrom = request.YearFrom, YearTo = request.YearTo }, ct);
+            }
         }
 
         private async Task<IdeaAnalysisResultDto> MapToResultDtoAsync(IdeaAnalysis analysis, CancellationToken ct)
@@ -214,6 +242,8 @@ namespace SmartFYPHandler.Services.Implementations
         public SourceWeights Weights { get; set; } = new();
         public int TopK { get; set; } = 10;
         public int CacheMinutes { get; set; } = 60;
+        public string EmbeddingProvider { get; set; } = "Hash"; // Hash | SBert | OpenAI (reserved)
+        public bool UseStopwords { get; set; } = true;
     }
 
     public class SimilarityThresholds
@@ -229,4 +259,3 @@ namespace SmartFYPHandler.Services.Implementations
         public double Papers { get; set; } = 0.25;
     }
 }
-
