@@ -338,5 +338,30 @@ namespace SmartFYPHandler.Services.Implementations
                 }).ToList() ?? new List<ProjectMemberDto>()
             };
         }
+        public async Task<DashboardStatsDto> GetDashboardStatsAsync(int userId)
+        {
+            var totalProjects = await _context.FYPProjects.CountAsync();
+
+            // Count bookmarked projects for this user
+            var savedProjects = await _context.UserInteractions
+                .Where(ui => ui.UserId == userId && ui.InteractionType == InteractionType.Bookmarked)
+                .CountAsync();
+
+            // Search History (Placeholder for now, returning 0 or mock)
+            var searchHistory = 23; // Static for now as no entity exists yet
+
+            // Count similar idea checks
+            var noveltyChecks = await _context.IdeaAnalyses
+                .Where(ia => ia.UserId == userId)
+                .CountAsync();
+
+            return new DashboardStatsDto
+            {
+                TotalProjects = totalProjects,
+                SavedProjects = savedProjects,
+                SearchHistoryCount = searchHistory,
+                NoveltyChecksCount = noveltyChecks
+            };
+        }
     }
 }

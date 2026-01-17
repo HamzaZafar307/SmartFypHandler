@@ -25,6 +25,10 @@ namespace SmartFYPHandler.Models.DTOs.Novelty
         public int OriginalityScore { get; set; }
         public string Category { get; set; } = string.Empty;
         public decimal MaxSimilarity { get; set; }
+        public decimal MaxInternalSimilarity { get; set; }
+        public decimal MaxGithubSimilarity { get; set; }
+        public decimal MaxPaperSimilarity { get; set; }
+        public string Explanation { get; set; } = string.Empty;
         public IReadOnlyList<NoveltyMatchDto> TopMatches { get; set; } = new List<NoveltyMatchDto>();
         public string[] Suggestions { get; set; } = Array.Empty<string>();
     }

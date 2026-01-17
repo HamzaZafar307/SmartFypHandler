@@ -59,6 +59,15 @@ namespace SmartFYPHandler.Services.Implementations
             // Ensure internal index exists/updated at least once (no-op if present)
             await _indexService.IndexInternalFypAsync(null, ct);
 
+            // Trigger "Live Check" for external sources using the Title as query
+            // This ensures we have relevant external matches for THIS idea
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                var syncOptions = new NoveltySourceSyncOptions(); // default options
+                await _indexService.IndexGitHubAsync(syncOptions, request.Title, ct);
+                await _indexService.IndexPapersAsync(syncOptions, request.Title, ct);
+            }
+
             var embedding = await _embeddingProvider.EmbedAsync(normalized, ct);
             // Query nearest by source
             var internalDocs = await _indexService.FindNearestAsync(embedding, _options.TopK, new[] { DocumentSourceType.InternalFyp }, ct);
@@ -157,17 +166,18 @@ namespace SmartFYPHandler.Services.Implementations
             }
             if (request.GitHub)
             {
-                await _indexService.IndexGitHubAsync(new NoveltySourceSyncOptions { YearFrom = request.YearFrom, YearTo = request.YearTo }, ct);
+                await _indexService.IndexGitHubAsync(new NoveltySourceSyncOptions { YearFrom = request.YearFrom, YearTo = request.YearTo }, null, ct);
             }
             if (request.Papers)
             {
-                await _indexService.IndexPapersAsync(new NoveltySourceSyncOptions { YearFrom = request.YearFrom, YearTo = request.YearTo }, ct);
+                await _indexService.IndexPapersAsync(new NoveltySourceSyncOptions { YearFrom = request.YearFrom, YearTo = request.YearTo }, null, ct);
             }
         }
 
         private async Task<IdeaAnalysisResultDto> MapToResultDtoAsync(IdeaAnalysis analysis, CancellationToken ct)
         {
             var matches = await _context.IdeaMatches
+                .Include(m => m.IndexedDocument) 
                 .Where(m => m.IdeaAnalysisId == analysis.Id)
                 .OrderBy(m => m.Rank)
                 .ToListAsync(ct);
@@ -178,37 +188,88 @@ namespace SmartFYPHandler.Services.Implementations
                 OriginalityScore = analysis.OriginalityScore,
                 Category = analysis.ResultCategory.ToString(),
                 MaxSimilarity = analysis.SimilarityMax,
+                MaxInternalSimilarity = matches.Where(m => m.SourceType == DocumentSourceType.InternalFyp).Select(m => m.Similarity).DefaultIfEmpty(0).Max(),
+                MaxGithubSimilarity = matches.Where(m => m.SourceType == DocumentSourceType.GitHub).Select(m => m.Similarity).DefaultIfEmpty(0).Max(),
+                MaxPaperSimilarity = matches.Where(m => m.SourceType == DocumentSourceType.ResearchPaper).Select(m => m.Similarity).DefaultIfEmpty(0).Max(),
                 TopMatches = matches.Select(m => new NoveltyMatchDto
                 {
                     SourceType = m.SourceType.ToString(),
                     Title = m.Title,
                     Url = m.Url,
                     Similarity = m.Similarity,
-                    Snippet = m.Snippet
+                    Snippet = m.Snippet,
+                    Year = m.IndexedDocument?.Year
                 }).ToList(),
-                Suggestions = BuildSuggestions(analysis)
+                Suggestions = BuildSuggestions(analysis, matches),
+                Explanation = BuildExplanation(analysis.OriginalityScore, analysis.SimilarityMax, matches.FirstOrDefault())
             };
             return dto;
         }
 
-        private string[] BuildSuggestions(IdeaAnalysis analysis)
+        private string[] BuildSuggestions(IdeaAnalysis analysis, List<IdeaMatch> matches)
         {
             var list = new List<string>();
+            var topMatch = matches.FirstOrDefault();
+
+            // 1. Time-based suggestion
+            if (topMatch != null && topMatch.IndexedDocument != null)
+            {
+                var age = DateTime.UtcNow.Year - topMatch.IndexedDocument.Year;
+                if (age >= 5)
+                {
+                    list.Add($"The most similar project is from {topMatch.IndexedDocument.Year}. " +
+                             $"Consider modernizing it with latest tech stacks (e.g., .NET 8, Flutter, Microservices).");
+                }
+                else if (age <= 1)
+                {
+                    list.Add("This topic is currently trending. Ensure your scope is distinct to avoid duplication.");
+                }
+            }
+
+            // 2. Similarity-based pivot
             if (analysis.ResultCategory == NoveltyCategory.HighSimilarity)
             {
-                list.Add("Idea is very similar; consider changing scope or domain.");
-                list.Add("Add unique features such as domain fusion (e.g., blockchain integration).");
+                list.Add("Your idea is highly similar. Try focusing on a specific niche (e.g., Healthcare, Rural Areas) instead of a generic solution.");
+                list.Add("Consider a 'Hybrid' approach by integrating a secondary technology like Blockchain or IoT.");
             }
             else if (analysis.ResultCategory == NoveltyCategory.MediumSimilarity)
             {
-                list.Add("Idea shares elements with others; refine objectives or target niche use-cases.");
-                list.Add("Consider localization, cultural adaptation, or wearable integration.");
+                list.Add("To increase novelty, focus on 'Deployment' and 'Real-world Testing' which many FYPs lack.");
             }
             else
             {
-                list.Add("Idea appears original; proceed and strengthen methodology.");
+                list.Add("Your idea looks original. Focus on feasibility and defining clear evaluation metrics.");
             }
-            return list.ToArray();
+
+            // 3. Keyword-based suggestions
+            var titleLower = analysis.InputTitle.ToLower();
+            if (titleLower.Contains("system") || titleLower.Contains("management"))
+            {
+                list.Add("Make it user-centric: Consider adding a Mobile App interface for better accessibility.");
+            }
+            if (titleLower.Contains("prediction") || titleLower.Contains("detection"))
+            {
+                list.Add("Enhancement: Explain how you will handle 'False Positives' and 'Data Privacy' in your methodology.");
+            }
+            if (!titleLower.Contains("cloud") && !titleLower.Contains("blockchain"))
+            {
+                // specific domain fusion suggestion
+                if (matches.Any(m => m.Title.Contains("Machine Learning")))
+                    list.Add("Differentiation: Could you optimize this model for Edge Devices (IoT) instead of Cloud?");
+            }
+
+            return list.Take(4).ToArray(); 
+        }
+
+        private string BuildExplanation(int score, decimal maxSim, IdeaMatch? topMatch)
+        {
+            var percentage = (maxSim * 100).ToString("F0");
+            if (score == 100)
+                return "Your idea appears completely unique based on our database.";
+            
+            var matchName = topMatch != null ? $"'{topMatch.Title}'" : "an existing project";
+            return $"Your Originality Score ({score}%) is calculated by deducting the maximum similarity found ({percentage}%). " +
+                   $"The most similar project found was {matchName} with a {percentage}% match.";
         }
 
         private static string Hash(string text)

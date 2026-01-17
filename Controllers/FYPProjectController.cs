@@ -35,6 +35,35 @@ namespace SmartFYPHandler.Controllers
         }
 
         /// <summary>
+        /// Get dashboard statistics
+        /// </summary>
+        [HttpGet("stats")]
+        
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            try
+            {
+                // Get current user ID
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                int userId = 0;
+                if (!string.IsNullOrEmpty(userIdClaim))
+                {
+                    int.TryParse(userIdClaim, out userId);
+                }
+                
+                // Fallback for development/seed user if no claim
+                if (userId == 0) userId = 1; 
+
+                var stats = await _fypProjectService.GetDashboardStatsAsync(userId);
+                return Ok(new { success = true, data = stats });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Get project by ID
         /// </summary>
         [HttpGet("{id}")]

@@ -170,23 +170,31 @@ namespace SmartFYPHandler.Services.Implementations
             }
         }
 
-        public async Task<int> IndexGitHubAsync(NoveltySourceSyncOptions options, CancellationToken ct = default)
+        public async Task<int> IndexGitHubAsync(NoveltySourceSyncOptions options, string? query = null, CancellationToken ct = default)
         {
             var provider = _externalProviders.FirstOrDefault(p => p.SourceType == DocumentSourceType.GitHub);
             if (provider == null) return 0;
 
-            // Use existing categories as queries to diversify results
-            var categories = await _context.FYPProjects
-                .Select(p => p.Category)
-                .Distinct()
-                .Where(c => c != null && c != "")
-                .Take(10)
-                .ToListAsync(ct);
+            List<string> queries;
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                queries = new List<string> { query };
+            }
+            else
+            {
+                // Use existing categories as queries to diversify results
+                queries = await _context.FYPProjects
+                    .Select(p => p.Category)
+                    .Distinct()
+                    .Where(c => c != null && c != "")
+                    .Take(10)
+                    .ToListAsync(ct);
+            }
 
             int count = 0;
-            foreach (var cat in categories)
+            foreach (var q in queries)
             {
-                var docs = await provider.FetchAsync(cat, options, ct);
+                var docs = await provider.FetchAsync(q, options, ct);
                 foreach (var d in docs)
                 {
                     await UpsertExternalAsync(DocumentSourceType.GitHub, d.Title, d.Url, d.Year, d.DepartmentId, d.Category, d.Text, ct);
@@ -197,23 +205,30 @@ namespace SmartFYPHandler.Services.Implementations
             return count;
         }
 
-        public async Task<int> IndexPapersAsync(NoveltySourceSyncOptions options, CancellationToken ct = default)
+        public async Task<int> IndexPapersAsync(NoveltySourceSyncOptions options, string? query = null, CancellationToken ct = default)
         {
             var provider = _externalProviders.FirstOrDefault(p => p.SourceType == DocumentSourceType.ResearchPaper);
             if (provider == null) return 0;
 
-            // Use categories as simple queries for arXiv
-            var categories = await _context.FYPProjects
-                .Select(p => p.Category)
-                .Distinct()
-                .Where(c => c != null && c != "")
-                .Take(10)
-                .ToListAsync(ct);
+            List<string> queries;
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                queries = new List<string> { query };
+            }
+            else
+            {
+                queries = await _context.FYPProjects
+                    .Select(p => p.Category)
+                    .Distinct()
+                    .Where(c => c != null && c != "")
+                    .Take(10)
+                    .ToListAsync(ct);
+            }
 
             int count = 0;
-            foreach (var cat in categories)
+            foreach (var q in queries)
             {
-                var docs = await provider.FetchAsync(cat, options, ct);
+                var docs = await provider.FetchAsync(q, options, ct);
                 foreach (var d in docs)
                 {
                     await UpsertExternalAsync(DocumentSourceType.ResearchPaper, d.Title, d.Url, d.Year, d.DepartmentId, d.Category, d.Text, ct);

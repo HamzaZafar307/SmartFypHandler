@@ -13,5 +13,6 @@ namespace SmartFYPHandler.Services.Interfaces
         Task<IEnumerable<int>> GetProjectYearsAsync();
         Task<bool> ProjectExistsAsync(int id);
         Task<IEnumerable<FYPProjectDto>> GetProjectsBySupervisorAsync(int supervisorId);
+        Task<DashboardStatsDto> GetDashboardStatsAsync(int userId);
     }
 }

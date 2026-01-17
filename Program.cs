@@ -17,7 +17,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Secret"]);
+var secret = jwtSettings["Secret"] ?? "super_secret_key_for_development_only_12345"; // Fallback for dev
+var key = Encoding.ASCII.GetBytes(secret);
 
 builder.Services.AddAuthentication(x =>
 {
@@ -83,7 +84,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         builder => builder
-            .WithOrigins("http://localhost:3000")
+            .WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:3002")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
