@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartFYPHandler.Models.DTOs.Authentication;
 using SmartFYPHandler.Models.Entities;
@@ -29,6 +29,29 @@ namespace SmartFYPHandler.Controllers
                 }
 
                 var result = await _authService.LoginAsync(loginDto);
+                return Ok(result);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto googleLoginDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var result = await _authService.GoogleLoginAsync(googleLoginDto);
                 return Ok(result);
             }
             catch (UnauthorizedAccessException ex)

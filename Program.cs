@@ -17,7 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secret = jwtSettings["Secret"] ?? "super_secret_key_for_development_only_12345"; // Fallback for dev
+var secret = jwtSettings["Secret"] ?? "SmartFYPHandler_Secure_JWT_Secret_Key_2026"; // Fallback for dev
 var key = Encoding.ASCII.GetBytes(secret);
 
 builder.Services.AddAuthentication(x =>

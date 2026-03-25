@@ -1,4 +1,4 @@
-﻿using SmartFYPHandler.Data;
+using SmartFYPHandler.Data;
 using SmartFYPHandler.Models.DTOs.Authentication;
 using SmartFYPHandler.Models.Entities;
 using SmartFYPHandler.Services.Interfaces;
@@ -10,11 +10,13 @@ namespace SmartFYPHandler.Services.Implementations
     {
         private readonly ApplicationDbContext _context;
         private readonly ITokenService _tokenService;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(ApplicationDbContext context, ITokenService tokenService)
+        public AuthService(ApplicationDbContext context, ITokenService tokenService, IConfiguration configuration)
         {
             _context = context;
             _tokenService = tokenService;
+            _configuration = configuration;
         }
 
         public async Task<AuthResponse> LoginAsync(LoginDto loginDto)
@@ -89,6 +91,64 @@ namespace SmartFYPHandler.Services.Implementations
                 Token = token,
                 User = userDto
             };
+        }
+
+        public async Task<AuthResponse> GoogleLoginAsync(GoogleLoginDto googleLoginDto)
+        {
+            var settings = new Google.Apis.Auth.GoogleJsonWebSignature.ValidationSettings()
+            {
+                Audience = new List<string> { _configuration["Google:ClientId"] }
+            };
+
+            try
+            {
+                var payload = await Google.Apis.Auth.GoogleJsonWebSignature.ValidateAsync(googleLoginDto.IdToken, settings);
+                
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.GoogleId == payload.Subject || u.Email.ToLower() == payload.Email.ToLower());
+
+                if (user == null)
+                {
+                    // Auto-register new Google user
+                    user = new User
+                    {
+                        FirstName = payload.GivenName ?? "Google",
+                        LastName = payload.FamilyName ?? "User",
+                        Email = payload.Email.ToLower(),
+                        GoogleId = payload.Subject,
+                        Role = UserRole.Student, // Default role
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        Department = "Unassigned"
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+                else if (string.IsNullOrEmpty(user.GoogleId))
+                {
+                    // Link existing email-based account to Google
+                    user.GoogleId = payload.Subject;
+                    user.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+
+                var token = _tokenService.GenerateJwtToken(user);
+                var userDto = MapToUserDto(user);
+
+                return new AuthResponse
+                {
+                    Success = true,
+                    Message = "Google login successful",
+                    Token = token,
+                    User = userDto
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new UnauthorizedAccessException("Google authentication failed: " + ex.Message);
+            }
         }
 
         public async Task<UserDto?> GetUserByIdAsync(int userId)

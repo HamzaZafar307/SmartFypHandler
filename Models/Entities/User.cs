@@ -1,4 +1,4 @@
-﻿using SmartFYPHandler.Models.DTOs.Authentication;
+using SmartFYPHandler.Models.DTOs.Authentication;
 using System.ComponentModel.DataAnnotations;
 
 namespace SmartFYPHandler.Models.Entities
@@ -20,8 +20,10 @@ namespace SmartFYPHandler.Models.Entities
         [StringLength(100)]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        public string PasswordHash { get; set; } = string.Empty;
+        public string? PasswordHash { get; set; }
+
+        [StringLength(100)]
+        public string? GoogleId { get; set; }
 
         [StringLength(20)]
         public string StudentId { get; set; } = string.Empty;

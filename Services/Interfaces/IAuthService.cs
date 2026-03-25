@@ -1,4 +1,4 @@
-﻿using SmartFYPHandler.Models.DTOs.Authentication;
+using SmartFYPHandler.Models.DTOs.Authentication;
 
 namespace SmartFYPHandler.Services.Interfaces
 {
@@ -6,6 +6,7 @@ namespace SmartFYPHandler.Services.Interfaces
     {
         Task<AuthResponse> LoginAsync(LoginDto loginDto);
         Task<AuthResponse> RegisterAsync(RegisterDto registerDto);
+        Task<AuthResponse> GoogleLoginAsync(GoogleLoginDto googleLoginDto);
         Task<UserDto?> GetUserByIdAsync(int userId);
     }
 }
