@@ -1,4 +1,4 @@
-﻿using SmartFYPHandler.Models.DTOs.Authentication;
+using SmartFYPHandler.Models.DTOs.Authentication;
 using SmartFYPHandler.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -27,6 +27,7 @@ namespace SmartFYPHandler.Data
         public DbSet<IndexedDocument> IndexedDocuments { get; set; }
         public DbSet<IdeaAnalysis> IdeaAnalyses { get; set; }
         public DbSet<IdeaMatch> IdeaMatches { get; set; }
+        public DbSet<SearchHistory> SearchHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -204,6 +205,16 @@ namespace SmartFYPHandler.Data
                       .HasForeignKey(m => m.IndexedDocumentId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+            
+            // SearchHistory configuration
+            modelBuilder.Entity<SearchHistory>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(sh => sh.User)
+                      .WithMany(u => u.SearchHistories)
+                      .HasForeignKey(sh => sh.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
             // Seed data
             SeedData(modelBuilder);
@@ -240,16 +251,45 @@ namespace SmartFYPHandler.Data
                 new ProjectCategory { Id = 7, Name = "Cybersecurity", Description = "Security and privacy related projects" }
             );
 
-            // Seed Admin User
+            // Seed Users
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
                     Id = 1,
                     FirstName = "System",
                     LastName = "Admin",
-                    Email = "admin@smartfyp.com",
+                    Email = "admin@gmail.com",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
                     Role = UserRole.Admin,
+                    DepartmentId = 1,
+                    Department = "Computer Science",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 200,
+                    FirstName = "Dr.",
+                    LastName = "Teacher",
+                    Email = "teacher@gmail.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("teacher123"),
+                    Role = UserRole.Teacher,
+                    DepartmentId = 1,
+                    Department = "Computer Science",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 300,
+                    FirstName = "John",
+                    LastName = "Student",
+                    Email = "student@gmail.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
+                    StudentId = "FA21-BCS-001",
+                    Role = UserRole.Student,
                     DepartmentId = 1,
                     Department = "Computer Science",
                     CreatedAt = DateTime.UtcNow,

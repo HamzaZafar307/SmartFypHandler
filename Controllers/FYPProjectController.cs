@@ -228,5 +228,100 @@ namespace SmartFYPHandler.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Get search history for the current user
+        /// </summary>
+        [HttpGet("search-history")]
+        [Authorize]
+        public async Task<IActionResult> GetSearchHistory()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                {
+                    return Unauthorized(new { success = false, message = "User ID not found in token" });
+                }
+
+                var history = await _fypProjectService.GetSearchHistoryAsync(userId);
+                return Ok(new { success = true, data = history });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Save a search query to history
+        /// </summary>
+        [HttpPost("search-history")]
+        [Authorize]
+        public async Task<IActionResult> SaveSearchHistory([FromBody] SaveSearchHistoryDto dto)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                {
+                    return Unauthorized(new { success = false, message = "User ID not found in token" });
+                }
+
+                var result = await _fypProjectService.SaveSearchHistoryAsync(userId, dto.Query, dto.ResultsCount);
+                return Ok(new { success = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Clear search history for the current user
+        /// </summary>
+        [HttpDelete("search-history")]
+        [Authorize]
+        public async Task<IActionResult> ClearSearchHistory()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                {
+                    return Unauthorized(new { success = false, message = "User ID not found in token" });
+                }
+
+                var result = await _fypProjectService.ClearSearchHistoryAsync(userId);
+                return Ok(new { success = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Get all supervisors (teachers)
+        /// </summary>
+        [HttpGet("supervisors")]
+        public async Task<IActionResult> GetSupervisors()
+        {
+            try
+            {
+                var supervisors = await _fypProjectService.GetSupervisorsAsync();
+                return Ok(new { success = true, data = supervisors });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+    }
+
+    public class SaveSearchHistoryDto
+    {
+        public string Query { get; set; } = string.Empty;
+        public int ResultsCount { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using SmartFYPHandler.Models.DTOs;
+using SmartFYPHandler.Models.DTOs.Authentication;
 
 namespace SmartFYPHandler.Services.Interfaces
 {
@@ -14,5 +15,9 @@ namespace SmartFYPHandler.Services.Interfaces
         Task<bool> ProjectExistsAsync(int id);
         Task<IEnumerable<FYPProjectDto>> GetProjectsBySupervisorAsync(int supervisorId);
         Task<DashboardStatsDto> GetDashboardStatsAsync(int userId);
+        Task<IEnumerable<SearchHistoryDto>> GetSearchHistoryAsync(int userId);
+        Task<bool> SaveSearchHistoryAsync(int userId, string query, int resultsCount);
+        Task<bool> ClearSearchHistoryAsync(int userId);
+        Task<IEnumerable<UserDto>> GetSupervisorsAsync();
     }
 }

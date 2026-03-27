@@ -341,15 +341,21 @@ namespace SmartFYPHandler.Services.Implementations
         public async Task<DashboardStatsDto> GetDashboardStatsAsync(int userId)
         {
             var totalProjects = await _context.FYPProjects.CountAsync();
+            var activeProjects = await _context.FYPProjects.CountAsync(p => p.Status == ProjectStatus.InProgress);
+            var completedProjects = await _context.FYPProjects.CountAsync(p => p.Status == ProjectStatus.Completed);
+
+            var totalStudents = await _context.Users.CountAsync(u => u.Role == UserRole.Student);
+            var totalTeachers = await _context.Users.CountAsync(u => u.Role == UserRole.Teacher);
 
             // Count bookmarked projects for this user
             var savedProjects = await _context.UserInteractions
                 .Where(ui => ui.UserId == userId && ui.InteractionType == InteractionType.Bookmarked)
                 .CountAsync();
 
-            // Search History (Placeholder for now, returning 0 or mock)
-            var searchHistory = 23; // Static for now as no entity exists yet
-
+            // Search History Count
+            var searchHistoryCount = await _context.SearchHistories
+                .CountAsync(sh => sh.UserId == userId);
+            
             // Count similar idea checks
             var noveltyChecks = await _context.IdeaAnalyses
                 .Where(ia => ia.UserId == userId)
@@ -358,10 +364,109 @@ namespace SmartFYPHandler.Services.Implementations
             return new DashboardStatsDto
             {
                 TotalProjects = totalProjects,
+                ActiveProjects = activeProjects,
+                CompletedProjects = completedProjects,
+                TotalStudents = totalStudents,
+                TotalTeachers = totalTeachers,
                 SavedProjects = savedProjects,
-                SearchHistoryCount = searchHistory,
+                SearchHistoryCount = searchHistoryCount,
                 NoveltyChecksCount = noveltyChecks
             };
+        }
+
+        public async Task<IEnumerable<SearchHistoryDto>> GetSearchHistoryAsync(int userId)
+        {
+            var history = await _context.SearchHistories
+                .Where(sh => sh.UserId == userId)
+                .OrderByDescending(sh => sh.Timestamp)
+                .Take(10)
+                .ToListAsync();
+
+            return history.Select(sh => new SearchHistoryDto
+            {
+                Id = sh.Id,
+                Query = sh.Query,
+                ResultsCount = sh.ResultsCount,
+                Timestamp = sh.Timestamp
+            });
+        }
+
+        public async Task<bool> SaveSearchHistoryAsync(int userId, string query, int resultsCount)
+        {
+            try
+            {
+                // Check if the same query already exists for this user recently to avoid duplicates
+                var existing = await _context.SearchHistories
+                    .Where(sh => sh.UserId == userId && sh.Query.ToLower() == query.ToLower())
+                    .OrderByDescending(sh => sh.Timestamp)
+                    .FirstOrDefaultAsync();
+
+                if (existing != null && (DateTime.UtcNow - existing.Timestamp).TotalMinutes < 5)
+                {
+                    // Just update the timestamp and result count
+                    existing.Timestamp = DateTime.UtcNow;
+                    existing.ResultsCount = resultsCount;
+                }
+                else
+                {
+                    var newEntry = new SearchHistory
+                    {
+                        UserId = userId,
+                        Query = query,
+                        ResultsCount = resultsCount,
+                        Timestamp = DateTime.UtcNow
+                    };
+                    _context.SearchHistories.Add(newEntry);
+                }
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ClearSearchHistoryAsync(int userId)
+        {
+            try
+            {
+                var history = await _context.SearchHistories
+                    .Where(sh => sh.UserId == userId)
+                    .ToListAsync();
+
+                if (history.Any())
+                {
+                    _context.SearchHistories.RemoveRange(history);
+                    await _context.SaveChangesAsync();
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<IEnumerable<UserDto>> GetSupervisorsAsync()
+        {
+            var supervisors = await _context.Users
+                .Where(u => u.Role == UserRole.Teacher && u.IsActive)
+                .OrderBy(u => u.FirstName)
+                .ToListAsync();
+
+            return supervisors.Select(u => new UserDto
+            {
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                Role = u.Role.ToString(),
+                Department = u.Department,
+                DepartmentId = u.DepartmentId,
+                IsActive = u.IsActive
+            });
         }
     }
 }

@@ -47,6 +47,7 @@ namespace SmartFYPHandler.Models.Entities
         public virtual ICollection<ProjectMember> ProjectMemberships { get; set; } = new List<ProjectMember>();
         public virtual ICollection<ProjectEvaluation> ProjectEvaluations { get; set; } = new List<ProjectEvaluation>();
         public virtual ICollection<UserInteraction> UserInteractions { get; set; } = new List<UserInteraction>();
+        public virtual ICollection<SearchHistory> SearchHistories { get; set; } = new List<SearchHistory>();
         public virtual UserPreference? UserPreference { get; set; }
     }
 }

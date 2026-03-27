@@ -106,7 +106,10 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();

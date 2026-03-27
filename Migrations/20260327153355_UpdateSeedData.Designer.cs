@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartFYPHandler.Data;
 
@@ -11,9 +12,11 @@ using SmartFYPHandler.Data;
 namespace SmartFYPHandler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260327153355_UpdateSeedData")]
+    partial class UpdateSeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,35 +52,35 @@ namespace SmartFYPHandler.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3732),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4592),
                             Description = "Web-based applications and websites",
                             Name = "Web Development"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3736),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4598),
                             Description = "Mobile applications for iOS and Android",
                             Name = "Mobile Development"
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3738),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4601),
                             Description = "AI and ML projects",
                             Name = "Machine Learning"
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3739),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4603),
                             Description = "Data analysis and visualization projects",
                             Name = "Data Science"
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3741),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4605),
                             Description = "Desktop software applications",
                             Name = "Desktop Applications"
                         });
@@ -124,46 +127,46 @@ namespace SmartFYPHandler.Migrations
                         {
                             Id = 1,
                             Code = "CS",
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3537),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4341),
                             Description = "Computer Science and Software Engineering",
                             Name = "Computer Science",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3540)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4344)
                         },
                         new
                         {
                             Id = 2,
                             Code = "SE",
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3548),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4354),
                             Description = "Software Engineering and Development",
                             Name = "Software Engineering",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3548)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4355)
                         },
                         new
                         {
                             Id = 3,
                             Code = "DS",
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3551),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4359),
                             Description = "Data Science and Analytics",
                             Name = "Data Science",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3551)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4360)
                         },
                         new
                         {
                             Id = 4,
                             Code = "CYB",
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3553),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4363),
                             Description = "Cybersecurity and Information Security",
                             Name = "Cybersecurity",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3554)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4363)
                         },
                         new
                         {
                             Id = 5,
                             Code = "IT",
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3555),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4366),
                             Description = "Information Technology and Systems",
                             Name = "Information Technology",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3556)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4366)
                         });
                 });
 
@@ -525,58 +528,58 @@ namespace SmartFYPHandler.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3775),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4657),
                             Description = "AI and ML related projects",
                             Name = "Machine Learning",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3780)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4666)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3785),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4672),
                             Description = "Web applications and services",
                             Name = "Web Development",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3786)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4673)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3788),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4676),
                             Description = "Mobile applications for iOS and Android",
                             Name = "Mobile Development",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3789)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4677)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3791),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4679),
                             Description = "Internet of Things projects",
                             Name = "IoT",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3791)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4680)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3793),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4682),
                             Description = "Blockchain and cryptocurrency projects",
                             Name = "Blockchain",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3793)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4683)
                         },
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3795),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4685),
                             Description = "Data analysis and visualization",
                             Name = "Data Science",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3795)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4685)
                         },
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3797),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4687),
                             Description = "Security and privacy related projects",
                             Name = "Cybersecurity",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 487, DateTimeKind.Utc).AddTicks(3797)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 510, DateTimeKind.Utc).AddTicks(4688)
                         });
                 });
 
@@ -683,35 +686,6 @@ namespace SmartFYPHandler.Migrations
                     b.ToTable("ProjectMembers");
                 });
 
-            modelBuilder.Entity("SmartFYPHandler.Models.Entities.SearchHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Query")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int>("ResultsCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SearchHistories");
-                });
-
             modelBuilder.Entity("SmartFYPHandler.Models.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -780,47 +754,47 @@ namespace SmartFYPHandler.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 696, DateTimeKind.Utc).AddTicks(1518),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 733, DateTimeKind.Utc).AddTicks(3079),
                             Department = "Computer Science",
                             DepartmentId = 1,
                             Email = "admin@gmail.com",
                             FirstName = "System",
                             IsActive = true,
                             LastName = "Admin",
-                            PasswordHash = "$2a$11$UQeKMiijVRCIGDobjUNuC./Y314NuaD/T.DFHgkUoeH6qIrUlgS0O",
+                            PasswordHash = "$2a$11$YmToEyi.UKeB8Z718GTEr.llkBwGGFn5ifiFpMmWsdhoE3TqbEmUS",
                             Role = 3,
                             StudentId = "",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 696, DateTimeKind.Utc).AddTicks(1522)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 733, DateTimeKind.Utc).AddTicks(3088)
                         },
                         new
                         {
                             Id = 200,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 900, DateTimeKind.Utc).AddTicks(8050),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 940, DateTimeKind.Utc).AddTicks(1902),
                             Department = "Computer Science",
                             DepartmentId = 1,
                             Email = "teacher@gmail.com",
                             FirstName = "Dr.",
                             IsActive = true,
                             LastName = "Teacher",
-                            PasswordHash = "$2a$11$hX4eigjSl5pSCSizAMF5ru9LE7Qz18YyKGruWd8yiubdjcApfTcTa",
+                            PasswordHash = "$2a$11$Q75mXSgfXcsa6NJWr2d5MeJwm0lMTh2zyUJ16OCpLAs4x8DeuRTpG",
                             Role = 2,
                             StudentId = "",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 41, 900, DateTimeKind.Utc).AddTicks(8056)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 54, 940, DateTimeKind.Utc).AddTicks(1909)
                         },
                         new
                         {
                             Id = 300,
-                            CreatedAt = new DateTime(2026, 3, 27, 15, 53, 42, 123, DateTimeKind.Utc).AddTicks(9066),
+                            CreatedAt = new DateTime(2026, 3, 27, 15, 33, 55, 147, DateTimeKind.Utc).AddTicks(837),
                             Department = "Computer Science",
                             DepartmentId = 1,
                             Email = "student@gmail.com",
                             FirstName = "John",
                             IsActive = true,
                             LastName = "Student",
-                            PasswordHash = "$2a$11$VijOPZcWck8uoAJZHYiMGOyZIOEduHX1wKMzeTjTgoDtp57jw1OHG",
+                            PasswordHash = "$2a$11$7e/IlFGosfcR/NA9X7BceOYmt.3CRoxABtYOnEoS.yTEqY.tPfv9O",
                             Role = 1,
                             StudentId = "FA21-BCS-001",
-                            UpdatedAt = new DateTime(2026, 3, 27, 15, 53, 42, 123, DateTimeKind.Utc).AddTicks(9071)
+                            UpdatedAt = new DateTime(2026, 3, 27, 15, 33, 55, 147, DateTimeKind.Utc).AddTicks(845)
                         });
                 });
 
@@ -1020,17 +994,6 @@ namespace SmartFYPHandler.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SmartFYPHandler.Models.Entities.SearchHistory", b =>
-                {
-                    b.HasOne("SmartFYPHandler.Models.Entities.User", "User")
-                        .WithMany("SearchHistories")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("SmartFYPHandler.Models.Entities.User", b =>
                 {
                     b.HasOne("SmartFYPHandler.Models.Entities.Department", "DepartmentEntity")
@@ -1122,8 +1085,6 @@ namespace SmartFYPHandler.Migrations
                     b.Navigation("ProjectEvaluations");
 
                     b.Navigation("ProjectMemberships");
-
-                    b.Navigation("SearchHistories");
 
                     b.Navigation("SupervisedFYPProjects");
 

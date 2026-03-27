@@ -1,4 +1,4 @@
-﻿namespace SmartFYPHandler.Models.DTOs.Authentication
+namespace SmartFYPHandler.Models.DTOs.Authentication
 {
     public class UserDto
     {
@@ -9,5 +9,7 @@
         public string StudentId { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
+        public int? DepartmentId { get; set; }
+        public bool IsActive { get; set; }
     }
 }
