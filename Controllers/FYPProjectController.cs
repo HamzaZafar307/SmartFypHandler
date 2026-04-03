@@ -62,11 +62,46 @@ namespace SmartFYPHandler.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+        /// <summary>
+        /// Get all supervisors (teachers)
+        /// </summary>
+        [HttpGet("supervisors")]
+        public async Task<IActionResult> GetSupervisors()
+        {
+            try
+            {
+                var supervisors = await _fypProjectService.GetSupervisorsAsync();
+                return Ok(new { success = true, data = supervisors });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Get all students
+        /// </summary>
+        [HttpGet("students")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> GetStudents()
+        {
+            try
+            {
+                var students = await _fypProjectService.GetStudentsAsync();
+                return Ok(new { success = true, data = students });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
 
         /// <summary>
         /// Get project by ID
         /// </summary>
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetProjectById(int id)
         {
             try
@@ -116,7 +151,7 @@ namespace SmartFYPHandler.Controllers
         /// <summary>
         /// Update a project (Teachers and Admins only)
         /// </summary>
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         [Authorize(Roles = "Teacher,Admin")]
         public async Task<IActionResult> UpdateProject(int id, [FromBody] UpdateFYPProjectDto updateProjectDto)
         {
@@ -148,7 +183,7 @@ namespace SmartFYPHandler.Controllers
         /// <summary>
         /// Delete a project (Admins only)
         /// </summary>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProject(int id)
         {
@@ -301,22 +336,6 @@ namespace SmartFYPHandler.Controllers
             }
         }
 
-        /// <summary>
-        /// Get all supervisors (teachers)
-        /// </summary>
-        [HttpGet("supervisors")]
-        public async Task<IActionResult> GetSupervisors()
-        {
-            try
-            {
-                var supervisors = await _fypProjectService.GetSupervisorsAsync();
-                return Ok(new { success = true, data = supervisors });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
-        }
     }
 
     public class SaveSearchHistoryDto

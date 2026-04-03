@@ -45,6 +45,24 @@ namespace SmartFYPHandler.Models.Entities
         [Range(0, int.MaxValue)]
         public int Citations { get; set; } = 0;
 
+        [StringLength(5000)]
+        public string ProgressDetails { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        public string GithubUrl { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        public string DocumentUrl { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        public string DemoUrl { get; set; } = string.Empty;
+
+        [StringLength(2000)]
+        public string Features { get; set; } = string.Empty; // Semicolon separated features
+
+        [StringLength(1000)]
+        public string Technologies { get; set; } = string.Empty; // Semicolon separated technologies
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

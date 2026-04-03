@@ -19,5 +19,6 @@ namespace SmartFYPHandler.Services.Interfaces
         Task<bool> SaveSearchHistoryAsync(int userId, string query, int resultsCount);
         Task<bool> ClearSearchHistoryAsync(int userId);
         Task<IEnumerable<UserDto>> GetSupervisorsAsync();
+        Task<IEnumerable<UserDto>> GetStudentsAsync();
     }
 }

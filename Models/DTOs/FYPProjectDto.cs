@@ -22,6 +22,12 @@ namespace SmartFYPHandler.Models.DTOs
         public int? DepartmentRank { get; set; }
         public int? OverallRank { get; set; }
         public int Citations { get; set; }
+        public string ProgressDetails { get; set; } = string.Empty;
+        public string GithubUrl { get; set; } = string.Empty;
+        public string DocumentUrl { get; set; } = string.Empty;
+        public string DemoUrl { get; set; } = string.Empty;
+        public string Features { get; set; } = string.Empty;
+        public string Technologies { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public List<ProjectMemberDto> ProjectMembers { get; set; } = new List<ProjectMemberDto>();
@@ -67,6 +73,15 @@ namespace SmartFYPHandler.Models.DTOs
         [StringLength(20)]
         public string DifficultyLevel { get; set; } = "Medium";
 
+        [StringLength(500)]
+        public string? GithubUrl { get; set; }
+
+        [StringLength(500)]
+        public string? DocumentUrl { get; set; }
+
+        [StringLength(500)]
+        public string? DemoUrl { get; set; }
+
         public List<int> StudentIds { get; set; } = new List<int>();
     }
 
@@ -104,6 +119,26 @@ namespace SmartFYPHandler.Models.DTOs
 
         [Range(0, int.MaxValue)]
         public int? Citations { get; set; }
+
+        public string? ProgressDetails { get; set; }
+
+        [StringLength(500)]
+        public string? GithubUrl { get; set; }
+
+        [StringLength(500)]
+        public string? DocumentUrl { get; set; }
+
+        [StringLength(500)]
+        public string? DemoUrl { get; set; }
+
+        [StringLength(2000)]
+        public string? Features { get; set; }
+
+        [StringLength(1000)]
+        public string? Technologies { get; set; }
+
+        public List<int>? StudentIds { get; set; }
+        public string? StatusUpdateComment { get; set; }
     }
 
     public class FYPProjectSearchDto

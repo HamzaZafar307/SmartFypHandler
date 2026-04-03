@@ -1,9 +1,9 @@
+using SmartFYPHandler.Models.DTOs.Authentication;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace SmartFYPHandler.Models.DTOs.Authentication;
 
-public class RegisterDto
+public class UpdateUserDto
 {
     [Required]
     [StringLength(50)]
@@ -18,10 +18,6 @@ public class RegisterDto
     [StringLength(100)]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
-    [MinLength(6)]
-    public string Password { get; set; } = string.Empty;
-
     [StringLength(20)]
     public string StudentId { get; set; } = string.Empty;
 
@@ -31,14 +27,4 @@ public class RegisterDto
     [Required]
     [StringLength(100)]
     public string Department { get; set; } = string.Empty;
-}
-
-
-
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum UserRole
-{
-    Student = 1,
-    Teacher = 2,
-    Admin = 3
 }

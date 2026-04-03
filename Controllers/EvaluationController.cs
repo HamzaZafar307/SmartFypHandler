@@ -8,7 +8,7 @@ namespace SmartFYPHandler.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Teacher,Admin")]
+    [Authorize(Roles = "Teacher,Admin,Student")]
     public class EvaluationController : ControllerBase
     {
         private readonly IProjectEvaluationService _evaluationService;

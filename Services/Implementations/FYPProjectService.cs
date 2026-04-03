@@ -142,6 +142,9 @@ namespace SmartFYPHandler.Services.Implementations
                 DepartmentId = createProjectDto.DepartmentId,
                 SupervisorId = createProjectDto.SupervisorId,
                 DifficultyLevel = createProjectDto.DifficultyLevel,
+                GithubUrl = createProjectDto.GithubUrl ?? string.Empty,
+                DocumentUrl = createProjectDto.DocumentUrl ?? string.Empty,
+                DemoUrl = createProjectDto.DemoUrl ?? string.Empty,
                 PerformanceScore = 0,
                 Citations = 0,
                 CreatedAt = DateTime.UtcNow,
@@ -242,6 +245,104 @@ namespace SmartFYPHandler.Services.Implementations
             if (updateProjectDto.Citations.HasValue)
                 project.Citations = updateProjectDto.Citations.Value;
 
+            if (!string.IsNullOrEmpty(updateProjectDto.ProgressDetails) && updateProjectDto.ProgressDetails != project.ProgressDetails)
+            {
+                project.ProgressDetails = updateProjectDto.ProgressDetails;
+                
+                // Track this as a progress update evaluation if no specific status comment was provided
+                // This ensures updates from the dashboard are also captured in the timeline
+                if (string.IsNullOrEmpty(updateProjectDto.StatusUpdateComment))
+                {
+                    _context.ProjectEvaluations.Add(new ProjectEvaluation
+                    {
+                        ProjectId = project.Id,
+                        EvaluatorId = project.SupervisorId,
+                        EvaluationType = EvaluationType.ProgressUpdate,
+                        Comments = updateProjectDto.ProgressDetails,
+                        EvaluationDate = DateTime.UtcNow,
+                        TechnicalScore = 0,
+                        InnovationScore = 0,
+                        ImplementationScore = 0,
+                        PresentationScore = 0,
+                        DocumentationScore = 0,
+                        OverallScore = 0,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            if (updateProjectDto.GithubUrl != null)
+                project.GithubUrl = updateProjectDto.GithubUrl;
+
+            if (updateProjectDto.DocumentUrl != null)
+                project.DocumentUrl = updateProjectDto.DocumentUrl;
+
+            if (updateProjectDto.DemoUrl != null)
+                project.DemoUrl = updateProjectDto.DemoUrl;
+
+            if (updateProjectDto.Features != null)
+                project.Features = updateProjectDto.Features;
+
+            if (updateProjectDto.Technologies != null)
+                project.Technologies = updateProjectDto.Technologies;
+
+            // Handle Status Update Comment as a Project Evaluation
+            if (!string.IsNullOrEmpty(updateProjectDto.StatusUpdateComment))
+            {
+                _context.ProjectEvaluations.Add(new ProjectEvaluation
+                {
+                    ProjectId = project.Id,
+                    EvaluatorId = project.SupervisorId,
+                    EvaluationType = EvaluationType.ProgressUpdate,
+                    Comments = updateProjectDto.StatusUpdateComment,
+                    EvaluationDate = DateTime.UtcNow,
+                    TechnicalScore = 0,
+                    InnovationScore = 0,
+                    ImplementationScore = 0,
+                    PresentationScore = 0,
+                    DocumentationScore = 0,
+                    OverallScore = 0,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+
+            // Handle Student Assignment (Membership Sync)
+            if (updateProjectDto.StudentIds != null)
+            {
+                // Get current members
+                var currentMembers = await _context.ProjectMembers
+                    .Where(pm => pm.FYPProjectId == project.Id)
+                    .ToListAsync();
+
+                // Remove members not in the new list
+                var membersToRemove = currentMembers
+                    .Where(m => !updateProjectDto.StudentIds.Contains(m.UserId))
+                    .ToList();
+                
+                _context.ProjectMembers.RemoveRange(membersToRemove);
+
+                // Add new members
+                var currentStudentIds = currentMembers.Select(m => m.UserId).ToList();
+                var studentIdsToAdd = updateProjectDto.StudentIds
+                    .Where(id => !currentStudentIds.Contains(id))
+                    .ToList();
+
+                foreach (var studentId in studentIdsToAdd)
+                {
+                    _context.ProjectMembers.Add(new ProjectMember
+                    {
+                        FYPProjectId = project.Id,
+                        UserId = studentId,
+                        Role = MemberRole.Member,
+                        JoinedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
             project.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -326,6 +427,12 @@ namespace SmartFYPHandler.Services.Implementations
                 DepartmentRank = project.DepartmentRank,
                 OverallRank = project.OverallRank,
                 Citations = project.Citations,
+                ProgressDetails = project.ProgressDetails,
+                GithubUrl = project.GithubUrl,
+                DocumentUrl = project.DocumentUrl,
+                DemoUrl = project.DemoUrl,
+                Features = project.Features,
+                Technologies = project.Technologies,
                 CreatedAt = project.CreatedAt,
                 UpdatedAt = project.UpdatedAt,
                 ProjectMembers = project.ProjectMembers?.Select(pm => new ProjectMemberDto
@@ -457,6 +564,26 @@ namespace SmartFYPHandler.Services.Implementations
                 .ToListAsync();
 
             return supervisors.Select(u => new UserDto
+            {
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                Role = u.Role.ToString(),
+                Department = u.Department,
+                DepartmentId = u.DepartmentId,
+                IsActive = u.IsActive
+            });
+        }
+
+        public async Task<IEnumerable<UserDto>> GetStudentsAsync()
+        {
+            var students = await _context.Users
+                .Where(u => u.Role == UserRole.Student && u.IsActive)
+                .OrderBy(u => u.FirstName)
+                .ToListAsync();
+
+            return students.Select(u => new UserDto
             {
                 Id = u.Id,
                 FirstName = u.FirstName,

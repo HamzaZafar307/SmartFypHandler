@@ -48,6 +48,7 @@ namespace SmartFYPHandler.Models.Entities
     {
         Interim = 1,
         Final = 2,
-        Defense = 3
+        Defense = 3,
+        ProgressUpdate = 4
     }
 }
