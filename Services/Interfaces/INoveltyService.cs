@@ -7,6 +7,7 @@ namespace SmartFYPHandler.Services.Interfaces
         Task<IdeaAnalysisResultDto> AnalyzeAsync(NoveltyAnalyzeRequestDto request, int userId, CancellationToken ct = default);
         Task<IdeaAnalysisResultDto?> GetAnalysisAsync(Guid id, int userId, CancellationToken ct = default);
         Task ReindexAsync(NoveltyReindexRequestDto request, CancellationToken ct = default);
+        Task<NoveltyChatResponseDto> ChatWithAiAsync(NoveltyChatRequestDto request, CancellationToken ct = default);
     }
 }
 

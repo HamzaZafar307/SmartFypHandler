@@ -41,5 +41,26 @@ namespace SmartFYPHandler.Models.DTOs.Novelty
         public int? YearFrom { get; set; }
         public int? YearTo { get; set; }
     }
+
+    public class NoveltyChatMessageDto
+    {
+        public string Role { get; set; } = "user"; // "user" or "assistant"
+        public string Content { get; set; } = string.Empty;
+    }
+
+    public class NoveltyChatRequestDto
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Abstract { get; set; } = string.Empty;
+        public int OriginalityScore { get; set; }
+        public List<NoveltyChatMessageDto> History { get; set; } = new();
+        public string Message { get; set; } = string.Empty;
+    }
+
+    public class NoveltyChatResponseDto
+    {
+        public string Reply { get; set; } = string.Empty;
+        public List<NoveltyChatMessageDto> UpdatedHistory { get; set; } = new();
+    }
 }
 

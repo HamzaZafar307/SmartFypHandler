@@ -15,6 +15,7 @@ namespace SmartFYPHandler.Services.Implementations
         private readonly IDocumentIndexService _indexService;
         private readonly IMemoryCache _cache;
         private readonly NoveltyOptions _options;
+        private readonly IGeminiService _geminiService;
 
         public NoveltyService(
             ApplicationDbContext context,
@@ -22,7 +23,8 @@ namespace SmartFYPHandler.Services.Implementations
             IEmbeddingProvider embeddingProvider,
             IDocumentIndexService indexService,
             IMemoryCache cache,
-            NoveltyOptions options)
+            NoveltyOptions options,
+            IGeminiService geminiService)
         {
             _context = context;
             _preprocessor = preprocessor;
@@ -30,6 +32,7 @@ namespace SmartFYPHandler.Services.Implementations
             _indexService = indexService;
             _cache = cache;
             _options = options;
+            _geminiService = geminiService;
         }
 
         public async Task<IdeaAnalysisResultDto> AnalyzeAsync(NoveltyAnalyzeRequestDto request, int userId, CancellationToken ct = default)
@@ -156,6 +159,45 @@ namespace SmartFYPHandler.Services.Implementations
                 .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId, ct);
             if (analysis == null) return null;
             return await MapToResultDtoAsync(analysis, ct);
+        }
+
+        public async Task<NoveltyChatResponseDto> ChatWithAiAsync(NoveltyChatRequestDto request, CancellationToken ct = default)
+        {
+            var systemPrompt = $@"You are a specialized Smart FYP Assistant for students developing their Final Year Projects.
+Your role is to help students refine their project ideas based on an initial novelty analysis.
+
+CONTEXT OF THE STUDENT'S PROJECT:
+- Title: {request.Title}
+- Abstract: {request.Abstract}
+- Originality Score: {request.OriginalityScore}%
+
+GUIDELINES:
+1. Be encouraging but critical when needed.
+2. If the Originality Score is low, suggest specific niches or technical 'pivots' (e.g., adding Blockchain, IoT, or focusing on a specific geographic region).
+3. Suggest modern tech stacks (e.g., React, .NET 8, Flutter, Python/FastAPI).
+4. Do not generate code unless specifically asked for a small snippet. Focus on ARCHITECTURE and SCOPE.
+5. Keep your responses concise (max 200 words).";
+
+            var historyStr = string.Join("\n", request.History.Select(h => $"{h.Role.ToUpper()}: {h.Content}"));
+            var userPrompt = $@"CONVERSATION HISTORY:
+{historyStr}
+
+LATEST STUDENT MESSAGE:
+{request.Message}
+
+Please respond to the student's latest message based on the project context provided.";
+
+            var aiResponse = await _geminiService.GenerateChatResponseAsync(systemPrompt, userPrompt, ct);
+
+            var updatedHistory = request.History.ToList();
+            updatedHistory.Add(new NoveltyChatMessageDto { Role = "user", Content = request.Message });
+            updatedHistory.Add(new NoveltyChatMessageDto { Role = "assistant", Content = aiResponse });
+
+            return new NoveltyChatResponseDto
+            {
+                Reply = aiResponse,
+                UpdatedHistory = updatedHistory
+            };
         }
 
         public async Task ReindexAsync(NoveltyReindexRequestDto request, CancellationToken ct = default)

@@ -75,5 +75,19 @@ namespace SmartFYPHandler.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+        [HttpPost("chat")]
+        public async Task<IActionResult> Chat([FromBody] NoveltyChatRequestDto request, CancellationToken ct)
+        {
+            try
+            {
+                var response = await _noveltyService.ChatWithAiAsync(request, ct);
+                return Ok(new { success = true, data = response });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

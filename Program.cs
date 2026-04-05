@@ -68,6 +68,7 @@ builder.Services.AddScoped<IDocumentIndexService, DocumentIndexService>();
 // External providers (free sources)
 builder.Services.AddScoped<IExternalDocumentProvider, SmartFYPHandler.Services.Implementations.External.GitHubSourceProvider>();
 builder.Services.AddScoped<IExternalDocumentProvider, SmartFYPHandler.Services.Implementations.External.ArXivSourceProvider>();
+builder.Services.AddScoped<IGeminiService, SmartFYPHandler.Services.Implementations.External.GeminiService>();
 builder.Services.AddScoped<INoveltyService, NoveltyService>();
 builder.Services.Configure<SmartFYPHandler.Services.Implementations.NoveltyOptions>(
     builder.Configuration.GetSection("Novelty"));
